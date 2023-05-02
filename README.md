@@ -2,6 +2,46 @@ InfraFund Platform
 
 Project Overview:
 
+For Back-end and Smart Contract Devs:
+
+Project Overview:
+Our client is a construction company that wants to create a blockchain-based crowdfunding platform for funding construction projects. The platform will allow users to invest in construction projects through the use of smart contracts, which will ensure transparency and security in the investment process. The goal of the platform is to provide an alternative way for construction projects to be funded while also reducing the risks associated with traditional crowdfunding methods.
+
+Back-End Requirements:
+
+The back-end of the platform should be built on a blockchain network, such as Ethereum or Hyperledger, to ensure security and transparency in the investment process.
+The platform should support multiple types of cryptocurrencies, including Bitcoin and Ether, as well as traditional payment methods, such as credit cards and bank transfers.
+The platform should have a user authentication system that allows users to create and manage their accounts securely.
+The platform should have a dashboard that allows investors to view their investments and monitor the progress of the construction projects they have invested in.
+The platform should have an administrative dashboard that allows the client to manage the platform and view analytics.
+
+Smart Contract Requirements:
+
+The smart contracts should be designed to ensure transparency and security in the investment process.
+The smart contracts should be designed to automatically distribute funds to the construction project based on predetermined milestones.
+The smart contracts should include a dispute resolution process to resolve any conflicts that may arise during the investment process.
+The smart contracts should be designed to allow for the creation of new construction projects on the platform and the management of existing projects.
+
+Additional Requirements:
+
+The platform should be designed to comply with local laws and regulations related to crowdfunding and investment.
+The platform should be scalable and able to handle a large volume of transactions.
+The platform should have a user-friendly interface that is easy to navigate.
+The platform should be designed to ensure the security of user data and financial information.
+
+Deliverables:
+
+A fully functional blockchain-based crowdfunding platform for the construction industry that meets the client's requirements.
+Source code for the back-end and smart contracts.
+Technical documentation for the platform, including instructions for deploying and maintaining the platform.
+
+Timeline:
+
+The client expects the project to be completed within 20 Days of the start date.
+
+
+For Front-end Devs:
+
 Our client is interested in developing a blockchain-based Crowdfunding platform for the construction industry. The platform aims to connect investors with construction projects that require funding. The platform will be built on top of blockchain technology to provide transparency, immutability, and security for all transactions. As a front-end developer, your job will be to design and implement the user interface for the platform.
 Target Audience:
 The platform's target audience will consist of two main groups: investors and project owners. Investors will be interested in finding investment opportunities in the construction industry, while project owners will be interested in finding funding for their projects.
