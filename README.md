@@ -5,6 +5,7 @@ Project Overview:
 For Back-end and Smart Contract Devs:
 
 Project Overview:
+
 Our client is a construction company that wants to create a blockchain-based crowdfunding platform for funding construction projects. The platform will allow users to invest in construction projects through the use of smart contracts, which will ensure transparency and security in the investment process. The goal of the platform is to provide an alternative way for construction projects to be funded while also reducing the risks associated with traditional crowdfunding methods.
 
 Back-End Requirements:
