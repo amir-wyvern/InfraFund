@@ -5,6 +5,7 @@ pragma solidity 0.8.17;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 
 error ZeroAddress();
@@ -13,7 +14,8 @@ error NotWhiteListed();
 error AlreadyAuditRequested();
 error NotAuditor();
 error AlreadyVerified();
-error WrongInput()
+error WrongInput();
+error ProposalNotVerified();
 
 /// @title ClientProposal
 /// @author Matin Rezaii
@@ -24,7 +26,10 @@ error WrongInput()
 
 contract ClientProposal is Ownable, Pausable {
 
+    using SafeERC20 for IERC20;
+
     uint256 private totalProposal;
+    uint256 private proposalFee;
 
     mapping(address => bool) private whiteListed;
     mapping(address => bool) private auditors;
@@ -40,6 +45,9 @@ contract ClientProposal is Ownable, Pausable {
         uint projectType;
         bool isVerified;
     }
+
+    event ProposalSubmitted(address indexed proposer, uint indexed proposalId);
+    event ProposalVerified(address indexed auditor, uint indexed proposalId);
 
     modifier onlyWhitelisted(address _address) {
         if(!whiteListed[_address])
@@ -81,8 +89,9 @@ contract ClientProposal is Ownable, Pausable {
     {
 
         uint proposalId = ++totalProposal;
+        ProjectProposal storage _projectProposal;
 
-        ProjectProposal memory _projectProposal;
+        paymentToken.safeTransferFrom(msg.sender, address(this), proposalFee);
 
         _projectProposal.name = name;
         _projectProposal.symbol = symbol;
@@ -92,18 +101,53 @@ contract ClientProposal is Ownable, Pausable {
 
         projectProposals[proposalId] = _projectProposal;
         _requestForAudit(proposalId);
+
+        emit ProposalSubmitted(msg.sender, proposalId);
     }
 
-    function verifyProject(uint proposalId) external onlyAuditor(msg.sender) {
+    /// @notice This function is called to verify a pending proposal
+    /// @dev An authorized auditor can call this function
+    /// @param proposalId The unique id of a proposal
+
+    function verifyProposal(uint proposalId) external onlyAuditor(msg.sender) {
 
         bool verified = projectProposals[proposalId].isVerified;
         if(verified)
             revert AlreadyVerified();
+
+        projectProposals[proposalId].isVerified = true;
+
+        emit ProposalVerified(msg.sender, proposalId);
     }
 
-    function createProject() external onlyOwner {
+    // TODO: Minimal Proxies (ERC1167)
+    function createProject(uint proposalId) external onlyOwner returns(address) {
 
-        // initialize the token address
+        ProjectProposal storage _proposal = projectProposals[proposalId];
+        bool verified = _proposal.isVerified;
+        if(!verified)
+            revert ProposalNotVerified();
+
+        string memory _name = _proposal.name;
+        string memory _symbol = _proposal.symbol;
+        string memory _description = _proposal.description;
+        uint _projectType = _proposal.projectType;
+        
+        if(_projectType == 0) {
+            return (address(new equityToken()))
+        }
+
+        else if(_projectType == 1) {
+
+        }
+
+        else if(_projectType == 2) {
+            
+        }
+
+        else {
+
+        }
     }
 
     function grantAuditor(address _newAuditor) external onlyOwner {
@@ -136,6 +180,22 @@ contract ClientProposal is Ownable, Pausable {
             revert NotGranted();
 
         delete whiteListed[_proposer];
+    }
+
+    function changeTokenAddress(address _newToken) external onlyOwner {
+
+        if(_newToken == address(0))
+            revert ZeroAddress();
+
+        paymentToken = IERC20(_newToken);
+    }
+
+    function changeProposalFee(uint _fee) external onlyOwner {
+
+        if(_fee == 0)
+            revert WrongInput();
+
+        proposalFee = _fee;
     }
 
     function _requestForAudit(address _address) private view {
