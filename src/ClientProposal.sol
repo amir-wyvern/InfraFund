@@ -183,9 +183,12 @@ contract ClientProposal is Ownable, Pausable {
             return _createClone(LoanToken, _owner, _name, _symbol);
         }
 
-        else {
+        else if(_projectType == 3) {
             return _createClone(PreSaleToken, _owner, _name, _symbol);
         }
+
+        else
+            return;
     }
 
     function grantAuditor(address _newAuditor) external onlyOwner {
@@ -253,7 +256,7 @@ contract ClientProposal is Ownable, Pausable {
     {
 
         address _clone = Clones.clone(_IERC20);
-        IERC20(_clone).initialize(owner_, name_, symbol_);
+        IERC20(_clone).initialize(paymentToken, owner_, name_, symbol_);
 
         emit TokenCreated(_clone, name_, symbol_);
 
