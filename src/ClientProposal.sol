@@ -6,6 +6,12 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/proxy/Clones.sol";
+
+import "/Derivatives/CharityToken.sol";
+import "/Derivatives/EquityToken.sol";
+import "/Derivatives/PreSaleToken.sol";
+import "/Derivatives/LoanToken.sol";
 
 
 error ZeroAddress();
@@ -16,6 +22,8 @@ error NotAuditor();
 error AlreadyVerified();
 error WrongInput();
 error ProposalNotVerified();
+error ProposalFeeRepaid();
+error Max50CharactersAreAllowed();
 
 /// @title ClientProposal
 /// @author Matin Rezaii
@@ -28,6 +36,11 @@ contract ClientProposal is Ownable, Pausable {
 
     using SafeERC20 for IERC20;
 
+    ERC20 private CharityToken;
+    ERC20 private EquityToken;
+    ERC20 private PreSaleToken;
+    ERC20 private LoanToken;
+
     uint256 private totalProposal;
     uint256 private proposalFee;
 
@@ -35,7 +48,7 @@ contract ClientProposal is Ownable, Pausable {
     mapping(address => bool) private auditors;
     mapping(uint => ProjectProposal) private projectProposals;
 
-    IERC20 private paymentToken;
+    IERC20 private paymentToken; // USDC
 
     struct ProjectProposal{
         string name;
@@ -44,10 +57,12 @@ contract ClientProposal is Ownable, Pausable {
         address proposer;
         uint projectType;
         bool isVerified;
+        bool isRepayed;
     }
 
     event ProposalSubmitted(address indexed proposer, uint indexed proposalId);
     event ProposalVerified(address indexed auditor, uint indexed proposalId);
+    event TokenCreated(address indexed clone, string name, string symbol);
 
     modifier onlyWhitelisted(address _address) {
         if(!whiteListed[_address])
@@ -88,6 +103,9 @@ contract ClientProposal is Ownable, Pausable {
         whenNotPaused()
     {
 
+        if (bytes(description).length <= 50)
+            revert Max50CharactersAreAllowed();
+
         uint proposalId = ++totalProposal;
         ProjectProposal storage _projectProposal;
 
@@ -118,6 +136,25 @@ contract ClientProposal is Ownable, Pausable {
         projectProposals[proposalId].isVerified = true;
 
         emit ProposalVerified(msg.sender, proposalId);
+
+        bool isPayed = projectProposals[proposalId].isRepayed;
+
+        if (isPayed)
+            revert ProposalFeeRepaid();
+
+        projectProposals[proposalId].isRepayed = true;
+        paymentToken.safeTransferFrom(address(this), msg.sender, proposalFee);
+    }
+
+    function repayProposalFee(uint _proposalId) external onlyOwner(msg.sender) {
+
+        bool isPayed = projectProposals[proposalId].isRepayed;
+
+        if (isPayed)
+            revert ProposalFeeRepaid();
+
+        projectProposals[proposalId].isRepayed = true;
+        paymentToken.safeTransferFrom(address(this), msg.sender, proposalFee);
     }
 
     // TODO: Minimal Proxies (ERC1167)
@@ -132,21 +169,22 @@ contract ClientProposal is Ownable, Pausable {
         string memory _symbol = _proposal.symbol;
         string memory _description = _proposal.description;
         uint _projectType = _proposal.projectType;
+        address _owner = msg.sender;
         
         if(_projectType == 0) {
-            return (address(new equityToken()))
+            return _createClone(CharityToken, _owner, _name, _symbol);
         }
 
         else if(_projectType == 1) {
-
+            return _createClone(EquityToken, _owner, _name, _symbol);
         }
 
         else if(_projectType == 2) {
-            
+            return _createClone(LoanToken, _owner, _name, _symbol);
         }
 
         else {
-
+            return _createClone(PreSaleToken, _owner, _name, _symbol);
         }
     }
 
@@ -202,6 +240,24 @@ contract ClientProposal is Ownable, Pausable {
 
         if(projectProposals[_address].isVerified)
             revert AlreadyAuditRequested();
+    }
+
+    function _createClone(
+        IERC20 _IERC20,
+        address owner_,
+        string calldata name_,
+        string calldata symbol_
+    ) 
+        private 
+        returns(address) 
+    {
+
+        address _clone = Clones.clone(_IERC20);
+        IERC20(_clone).initialize(owner_, name_, symbol_);
+
+        emit TokenCreated(_clone, name_, symbol_);
+
+        return _clone;
     }
 
 
