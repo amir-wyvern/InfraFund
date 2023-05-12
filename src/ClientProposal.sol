@@ -1,6 +1,19 @@
 // SPDX-License-Identifier: BSD-3-Clause license
 pragma solidity 0.8.17;
 
+/*
+ ______             ______                          ________                          __ 
+/      |           /      \                        /        |                        /  |
+$$$$$$/  _______  /$$$$$$  |______   ______        $$$$$$$$/__    __  _______    ____$$ |
+  $$ |  /       \ $$ |_ $$//      \ /      \       $$ |__  /  |  /  |/       \  /    $$ |
+  $$ |  $$$$$$$  |$$   |  /$$$$$$  |$$$$$$  |      $$    | $$ |  $$ |$$$$$$$  |/$$$$$$$ |
+  $$ |  $$ |  $$ |$$$$/   $$ |  $$/ /    $$ |      $$$$$/  $$ |  $$ |$$ |  $$ |$$ |  $$ |
+ _$$ |_ $$ |  $$ |$$ |    $$ |     /$$$$$$$ |      $$ |    $$ \__$$ |$$ |  $$ |$$ \__$$ |
+/ $$   |$$ |  $$ |$$ |    $$ |     $$    $$ |      $$ |    $$    $$/ $$ |  $$ |$$    $$ |
+$$$$$$/ $$/   $$/ $$/     $$/       $$$$$$$/       $$/      $$$$$$/  $$/   $$/  $$$$$$$/ 
+                                                                                         
+*/                                                                                         
+                                                                                         
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
@@ -8,10 +21,10 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
-import "/Derivatives/CharityToken.sol";
-import "/Derivatives/EquityToken.sol";
-import "/Derivatives/PreSaleToken.sol";
-import "/Derivatives/LoanToken.sol";
+import "./Derivatives/CharityToken.sol";
+import "./Derivatives/EquityToken.sol";
+// import "./Derivatives/PreSaleToken.sol";
+// import "./Derivatives/LoanToken.sol";
 
 
 error ZeroAddress();
@@ -23,10 +36,11 @@ error AlreadyVerified();
 error WrongInput();
 error ProposalNotVerified();
 error ProposalFeeRepaid();
+error WrongProjectType();
 error Max50CharactersAreAllowed();
 
 /// @title ClientProposal
-/// @author Matin Rezaii
+/// @author InfraFund Labs
 /// @notice A contract which covers the tasks from the client side of the protocol
 ///         This contract is the client companies entry point to the protocol which
 ///         contains a projects different status.
@@ -36,17 +50,17 @@ contract ClientProposal is Ownable, Pausable {
 
     using SafeERC20 for IERC20;
 
-    ERC20 private CharityToken;
-    ERC20 private EquityToken;
-    ERC20 private PreSaleToken;
-    ERC20 private LoanToken;
+    CharityToken private charityToken;
+    EquityToken private equityToken;
+    // PreSaleToken private preSaleToken;
+    // LoanToken private loanToken;
 
     uint256 private totalProposal;
     uint256 private proposalFee;
 
     mapping(address => bool) private whiteListed;
     mapping(address => bool) private auditors;
-    mapping(uint => ProjectProposal) private projectProposals;
+    mapping(uint => ProjectProposal) public projectProposals;
 
     IERC20 private paymentToken; // USDC
 
@@ -55,6 +69,7 @@ contract ClientProposal is Ownable, Pausable {
         string symbol;
         string description;
         address proposer;
+        address deployedAddress;
         uint projectType;
         bool isVerified;
         bool isRepayed;
@@ -87,15 +102,15 @@ contract ClientProposal is Ownable, Pausable {
 
     /// @notice This function is the entry point of the protocol for the clients
     /// @dev Only permissioned clients can call this function
-    /// @param name Project proposal name
-    /// @param symbol Project proposal symbol
-    /// @param description Project proposal description
+    /// @param _name Project proposal name
+    /// @param _symbol Project proposal symbol
+    /// @param _description Project proposal description
     /// @param _projectType Type of the proposed project
 
     function submitProposal(
-        string calldata name,
-        string calldata symbol,
-        string calldata description,
+        string calldata _name,
+        string calldata _symbol,
+        string calldata _description,
         uint _projectType
     ) 
         external
@@ -103,21 +118,20 @@ contract ClientProposal is Ownable, Pausable {
         whenNotPaused()
     {
 
-        if (bytes(description).length <= 50)
+        if (bytes(_description).length > 50)
             revert Max50CharactersAreAllowed();
 
         uint proposalId = ++totalProposal;
-        ProjectProposal storage _projectProposal;
+        ProjectProposal storage _projectProposal = projectProposals[proposalId];
 
         paymentToken.safeTransferFrom(msg.sender, address(this), proposalFee);
 
-        _projectProposal.name = name;
-        _projectProposal.symbol = symbol;
-        _projectProposal.description = description;
+        _projectProposal.name = _name;
+        _projectProposal.symbol = _symbol;
+        _projectProposal.description = _description;
         _projectProposal.projectType = _projectType;
         _projectProposal.proposer = msg.sender;
 
-        projectProposals[proposalId] = _projectProposal;
         _requestForAudit(proposalId);
 
         emit ProposalSubmitted(msg.sender, proposalId);
@@ -146,19 +160,19 @@ contract ClientProposal is Ownable, Pausable {
         paymentToken.safeTransferFrom(address(this), msg.sender, proposalFee);
     }
 
-    function repayProposalFee(uint _proposalId) external onlyOwner(msg.sender) {
+    function repayProposalFee(uint _proposalId) external onlyOwner {
 
-        bool isPayed = projectProposals[proposalId].isRepayed;
+        bool isPayed = projectProposals[_proposalId].isRepayed;
 
         if (isPayed)
             revert ProposalFeeRepaid();
 
-        projectProposals[proposalId].isRepayed = true;
+        projectProposals[_proposalId].isRepayed = true;
         paymentToken.safeTransferFrom(address(this), msg.sender, proposalFee);
     }
 
     // TODO: Minimal Proxies (ERC1167)
-    function createProject(uint proposalId) external onlyOwner returns(address) {
+    function createProject(uint proposalId) external onlyOwner returns(address _project) {
 
         ProjectProposal storage _proposal = projectProposals[proposalId];
         bool verified = _proposal.isVerified;
@@ -167,28 +181,46 @@ contract ClientProposal is Ownable, Pausable {
 
         string memory _name = _proposal.name;
         string memory _symbol = _proposal.symbol;
-        string memory _description = _proposal.description;
         uint _projectType = _proposal.projectType;
         address _owner = msg.sender;
         
         if(_projectType == 0) {
-            return _createClone(CharityToken, _owner, _name, _symbol);
+
+            address token = address(new CharityToken(_name, _symbol, _owner, paymentToken));
+            _proposal.deployedAddress = token;
+            emit TokenCreated(token, _name, _symbol);
+            _project = token;
         }
 
         else if(_projectType == 1) {
-            return _createClone(EquityToken, _owner, _name, _symbol);
+
+            address token = address(new EquityToken(_name, _symbol, _owner, paymentToken));
+            _proposal.deployedAddress = token;
+            emit TokenCreated(token, _name, _symbol);
+            _project = token;
+            // return _createClone(EquityToken, _owner, _name, _symbol);
         }
 
         else if(_projectType == 2) {
-            return _createClone(LoanToken, _owner, _name, _symbol);
+            // return _createClone(LoanToken, _owner, _name, _symbol);
         }
 
         else if(_projectType == 3) {
-            return _createClone(PreSaleToken, _owner, _name, _symbol);
+            // return _createClone(PreSaleToken, _owner, _name, _symbol);
         }
 
         else
-            return;
+            revert WrongProjectType();
+    }
+
+    function pause() external onlyOwner {
+
+        _pause();
+    }
+
+    function unpause() external onlyOwner {
+
+        _unpause();
     }
 
     function grantAuditor(address _newAuditor) external onlyOwner {
@@ -239,29 +271,12 @@ contract ClientProposal is Ownable, Pausable {
         proposalFee = _fee;
     }
 
-    function _requestForAudit(address _address) private view {
+    function _requestForAudit(uint _proposalId) private view {
 
-        if(projectProposals[_address].isVerified)
+        if(projectProposals[_proposalId].isVerified)
             revert AlreadyAuditRequested();
     }
 
-    function _createClone(
-        IERC20 _IERC20,
-        address owner_,
-        string calldata name_,
-        string calldata symbol_
-    ) 
-        private 
-        returns(address) 
-    {
-
-        address _clone = Clones.clone(_IERC20);
-        IERC20(_clone).initialize(paymentToken, owner_, name_, symbol_);
-
-        emit TokenCreated(_clone, name_, symbol_);
-
-        return _clone;
-    }
 
 
 }
