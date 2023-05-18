@@ -1,0 +1,479 @@
+{
+	"compiler": {
+		"version": "0.8.17+commit.8df45f5f"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_token",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "_client",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "_campaign",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_stakingAmount",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"inputs": [],
+				"name": "NotContributed",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "NotGranted",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "OnlyOwnerCanCall",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "ProjectNotDeployed",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "WrongInput",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "grantedBefore",
+				"type": "error"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "tierFee",
+						"type": "uint256"
+					},
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "tierType",
+						"type": "uint256"
+					}
+				],
+				"name": "Staked",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "user",
+						"type": "address"
+					},
+					{
+						"indexed": true,
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "Withdrawn",
+				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_projectId",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint8",
+						"name": "_type",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint240",
+						"name": "_fee",
+						"type": "uint240"
+					},
+					{
+						"internalType": "uint8",
+						"name": "_weight",
+						"type": "uint8"
+					}
+				],
+				"name": "addProjectTier",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_projectId",
+						"type": "uint256"
+					}
+				],
+				"name": "cancel",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "contributions",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_user",
+						"type": "address"
+					}
+				],
+				"name": "grantInvestor",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"name": "grantedInvestors",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "projectTiers",
+				"outputs": [
+					{
+						"internalType": "uint8",
+						"name": "tierType",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint8",
+						"name": "tierWeight",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint240",
+						"name": "tierFee",
+						"type": "uint240"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_user",
+						"type": "address"
+					}
+				],
+				"name": "revokeInvestor",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_projectId",
+						"type": "uint256"
+					}
+				],
+				"name": "selectTier",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_user",
+						"type": "address"
+					}
+				],
+				"name": "selectWinner",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"src/Staking.sol": "Staking"
+		},
+		"evmVersion": "london",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": true,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"@openzeppelin/contracts/access/Ownable.sol": {
+			"keccak256": "0xa94b34880e3c1b0b931662cb1c09e5dfa6662f31cba80e07c5ee71cd135c9673",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://40fb1b5102468f783961d0af743f91b9980cf66b50d1d12009f6bb1869cea4d2",
+				"dweb:/ipfs/QmYqEbJML4jB1GHbzD4cUZDtJg5wVwNm3vDJq1GbyDus8y"
+			]
+		},
+		"@openzeppelin/contracts/interfaces/IERC4626.sol": {
+			"keccak256": "0xd82776ed6975a5939668e068f995acb1394c2f60a12a9ef3f14cacb91b5a8fd4",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://0f381a6a834cd8d5296b819365ffd39d192ab7ac3d458b894a612d1c3b92f03f",
+				"dweb:/ipfs/QmTRQE9c57bHGtuubLp8fMAA5jfsb1BR5s7iPd9cWSPfKm"
+			]
+		},
+		"@openzeppelin/contracts/proxy/Clones.sol": {
+			"keccak256": "0x888d64d221d52c31d015b76e50ca1af5ef8ff076550810b49cea6b01d8267a10",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://4da0f451fe5aefdb95204dbec4a9448a8a2b00a444864bb5dbf7162da842a0f7",
+				"dweb:/ipfs/QmYciAwNiJzgGMAqSTUANwMjy5HykNUvmkQ5PQhNTRqrB5"
+			]
+		},
+		"@openzeppelin/contracts/proxy/utils/Initializable.sol": {
+			"keccak256": "0x3798da9e212cd00a7cda94ddb5a9721171a718e89c500d8901f810e0e37fa74e",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://a93f9c584e4b29dce1c7520b63d19f34c684f5ea972b5d04323a132059851004",
+				"dweb:/ipfs/QmajmiA7BsarS63FMoP5PcBS4mqVGoiJ7xZ3wJVonYNTHC"
+			]
+		},
+		"@openzeppelin/contracts/security/Pausable.sol": {
+			"keccak256": "0x0849d93b16c9940beb286a7864ed02724b248b93e0d80ef6355af5ef15c64773",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://4ddabb16009cd17eaca3143feadf450ac13e72919ebe2ca50e00f61cb78bc004",
+				"dweb:/ipfs/QmSPwPxX7d6TTWakN5jy5wsaGkS1y9TW8fuhGSraMkLk2B"
+			]
+		},
+		"@openzeppelin/contracts/token/ERC20/ERC20.sol": {
+			"keccak256": "0x4ffc0547c02ad22925310c585c0f166f8759e2648a09e9b489100c42f15dd98d",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://15f52f51413a9de1ff191e2f6367c62178e1df7806d7880fe857a98b0b66253d",
+				"dweb:/ipfs/QmaQG1fwfgUt5E9nu2cccFiV47B2V78MM1tCy1qB7n4MsH"
+			]
+		},
+		"@openzeppelin/contracts/token/ERC20/IERC20.sol": {
+			"keccak256": "0x9750c6b834f7b43000631af5cc30001c5f547b3ceb3635488f140f60e897ea6b",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://5a7d5b1ef5d8d5889ad2ed89d8619c09383b80b72ab226e0fe7bde1636481e34",
+				"dweb:/ipfs/QmebXWgtEfumQGBdVeM6c71McLixYXQP5Bk6kKXuoY4Bmr"
+			]
+		},
+		"@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol": {
+			"keccak256": "0xab83c36e40ee8fd41471fe94edcad13adae83b7f5179d022780062414e8fbf55",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://0ff872f2a6fb1431e727c09151ffbb30f3e45212d6ad73b64b27c6b64608a23b",
+				"dweb:/ipfs/Qmd2Gzqb12qheWkL94RBK1HU9XBoKwECUbXwLpahR35u31"
+			]
+		},
+		"@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol": {
+			"keccak256": "0x8de418a5503946cabe331f35fe242d3201a73f67f77aaeb7110acb1f30423aca",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://5a376d3dda2cb70536c0a45c208b29b34ac560c4cb4f513a42079f96ba47d2dd",
+				"dweb:/ipfs/QmZQg6gn1sUpM8wHzwNvSnihumUCAhxD119MpXeKp8B9s8"
+			]
+		},
+		"@openzeppelin/contracts/token/ERC20/extensions/draft-IERC20Permit.sol": {
+			"keccak256": "0xf41ca991f30855bf80ffd11e9347856a517b977f0a6c2d52e6421a99b7840329",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://b2717fd2bdac99daa960a6de500754ea1b932093c946388c381da48658234b95",
+				"dweb:/ipfs/QmP6QVMn6UeA3ByahyJbYQr5M6coHKBKsf3ySZSfbyA8R7"
+			]
+		},
+		"@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol": {
+			"keccak256": "0x9b72f93be69ca894d8492c244259615c4a742afc8d63720dbc8bb81087d9b238",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://f5a7b96e511be78d5cdf635c784e6ab8cdd38625bb8cafb8a80914a1c89cf0f6",
+				"dweb:/ipfs/QmVzTCwJxQAkjRQHboT5QrvsVJGWQHgfEjeTbvyxoKBrds"
+			]
+		},
+		"@openzeppelin/contracts/utils/Address.sol": {
+			"keccak256": "0xf96f969e24029d43d0df89e59d365f277021dac62b48e1c1e3ebe0acdd7f1ca1",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://ec772b45a624be516f1c81970caa8a2e144301e9d0921cbc1a2789fef39a1269",
+				"dweb:/ipfs/QmNyjwxCrGhQMyzLD93oUobJXVe9ceJvRvfXwbEtuxPiEj"
+			]
+		},
+		"@openzeppelin/contracts/utils/Context.sol": {
+			"keccak256": "0xe2e337e6dde9ef6b680e07338c493ebea1b5fd09b43424112868e9cc1706bca7",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://6df0ddf21ce9f58271bdfaa85cde98b200ef242a05a3f85c2bc10a8294800a92",
+				"dweb:/ipfs/QmRK2Y5Yc6BK7tGKkgsgn3aJEQGi5aakeSPZvS65PV8Xp3"
+			]
+		},
+		"@openzeppelin/contracts/utils/math/Math.sol": {
+			"keccak256": "0xa1e8e83cd0087785df04ac79fb395d9f3684caeaf973d9e2c71caef723a3a5d6",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://33bbf48cc069be677705037ba7520c22b1b622c23b33e1a71495f2d36549d40b",
+				"dweb:/ipfs/Qmct36zWXv3j7LZB83uwbg7TXwnZSN1fqHNDZ93GG98bGz"
+			]
+		},
+		"src/Campaign.sol": {
+			"keccak256": "0xaad496ed1a52410cb8c124d6ce13539eaec6e58f6d1b28cfd796a15c2b75ab9c",
+			"license": "BSD-3-Clause license",
+			"urls": [
+				"bzz-raw://15594d6f3d1ddb8531eeae63fb9ed21e46036cd15817871b30715d98fb0e4233",
+				"dweb:/ipfs/QmSqFNP4Jo46FNtGz13rMgPatzvpHbgwa5c9LkNRpNte5f"
+			]
+		},
+		"src/ClientProposal.sol": {
+			"keccak256": "0x59a3011f09b1f4aad9a10a191fc92d381df18857db83d52391962710117d022a",
+			"license": "BSD-3-Clause license",
+			"urls": [
+				"bzz-raw://9c7e7c1dde6ecf1482b3dcf3e78ccb7f5cafc35767aa7b8e25e19adb9cf87d42",
+				"dweb:/ipfs/QmNtzZs6113vBcsyfSVQjkQQdyHZVThW6gcdnmQjCTrLTV"
+			]
+		},
+		"src/Derivatives/CharityToken.sol": {
+			"keccak256": "0x0ecc4b20907e41e8f6ddf15ebe720dfc6fd8c7f441bc2d3c3d201b142b510e86",
+			"license": "BSD-3-Clause license",
+			"urls": [
+				"bzz-raw://483b189181730394c6c54ce7dead7508c914c1b0255bd0254ed18df345bc2b74",
+				"dweb:/ipfs/QmcVQTkwwdPCLCmQcwy9kLrv2nczLYQ4LPq4ehrQSEgNom"
+			]
+		},
+		"src/Derivatives/EquityToken.sol": {
+			"keccak256": "0x5af2c1b69de809b59e56479ed445d1a470fd14481b27a3efa655dc776f24f31d",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://3442cd7c634b8d746069a1665665a83ed24903592bd22745574f6102b38dce56",
+				"dweb:/ipfs/QmNrGV16yFLuefPAVCh8foX5mMeHotyqxeyfSkdsSbHcXQ"
+			]
+		},
+		"src/Derivatives/ICharityToken.sol": {
+			"keccak256": "0x669b03264efcdb82364e951b2757b3dfb31ea474a58a11dbe05fbbed4b1cac0d",
+			"license": "BSD-3-Clause license",
+			"urls": [
+				"bzz-raw://e7027b7f37f15fbfa6669f2860e051f9892cd52da3711db5f64dabbac6f9095f",
+				"dweb:/ipfs/QmbZdGZWpQ7p4BhnHCvAUjWgFXh78RtNAEiXpNW1TwGrT5"
+			]
+		},
+		"src/Derivatives/IEquityToken.sol": {
+			"keccak256": "0x58fe912d97818e5c929896e5d02a3686090d5e884ba1b93b93a9fc4e7dbfd1d6",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://13cb5df0ae3002aba911768c998525e5ef05f3344879b06f48849764614d8305",
+				"dweb:/ipfs/QmY4uJvE7eu3Wep5p7dVskTkuHCCUi8JDDPVK1u2MfHNM9"
+			]
+		},
+		"src/IStaking.sol": {
+			"keccak256": "0xbdf6c667d5105d9658c3a54db70ed23ea31dcee24ece48e609fdaee8d1cb85c3",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://abdb0f7ec40b9805c2fc231f4b68ab704df11bb3b09f09550781a8bfc9378aef",
+				"dweb:/ipfs/QmNvtG1qwWRzkHD3fmi6XrEaBuQjVWmF6TMuMkZqzReJ5M"
+			]
+		},
+		"src/Staking.sol": {
+			"keccak256": "0xc497381bae8a8d6121f8264e7b7d1a610107228e8905e4390194036cc5ad9955",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://01a2a2cc732ef76c253d70edcabed9e4870f2afdf42752e3761d7ba176d57c25",
+				"dweb:/ipfs/QmTfqAk4C2cTtFvV26kRsH3KCcsuGc1VfXgcrJXARdsDDB"
+			]
+		}
+	},
+	"version": 1
+}

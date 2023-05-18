@@ -20,9 +20,9 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
-import "./Derivatives/CharityToken.sol";
-import "./Derivatives/EquityToken.sol";
-import "./Campaign.sol";
+import {CharityToken} from "./Derivatives/CharityToken.sol";
+import {EquityToken} from "./Derivatives/EquityToken.sol";
+import {Campaign} from "./Campaign.sol";
 // import "./Derivatives/PreSaleToken.sol";
 // import "./Derivatives/LoanToken.sol";
 
@@ -31,6 +31,7 @@ error ZeroAddress();
 error NotGranted();
 error NotWhiteListed();
 error AlreadyAuditRequested();
+error OnlyOwnerCanCall();
 error NotProposer();
 error NotAuditor();
 error AlreadyVerified();
@@ -41,6 +42,7 @@ error WrongProjectType();
 error LengthsNotEqual();
 error ProjectNotDefined();
 error Max50CharactersAreAllowed();
+error LessInvestmentPeriod();
 
 /// @title ClientProposal
 /// @author InfraFund Labs
@@ -97,8 +99,10 @@ contract ClientProposal is Pausable {
     event ProjectDefined(
         address indexed proposer, 
         uint indexed proposalId,
-        string description);
+        string[] description);
     event TokenCreated(address indexed clone, string name, string symbol);
+    event ClientGranted(address indexed client);
+    event ClientRemoved(address indexed client);
 
     modifier onlyOwner {
 
@@ -115,7 +119,7 @@ contract ClientProposal is Pausable {
     }
 
     modifier onlyAuditor {
-        if(!campaign.auditors[msg.sender])
+        if(!campaign.auditors(msg.sender))
             revert NotAuditor();
         _;
     }
@@ -206,7 +210,6 @@ contract ClientProposal is Pausable {
     }
 
 
-    // TODO: Minimal Proxies (ERC1167)
     function createProject(uint proposalId) external onlyOwner returns(address _project) {
 
         ProjectProposal storage _proposal = projectProposals[proposalId];
@@ -234,7 +237,7 @@ contract ClientProposal is Pausable {
 
         else if(_projectType == 1) {
 
-            address token = address(new EquityToken(_name, _symbol, _owner, paymentToken));
+            address token = address(new EquityToken(paymentToken, _name, _symbol, _owner));
             _proposal.deployedAddress = token;
             emit TokenCreated(token, _name, _symbol);
             _project = token;
@@ -253,13 +256,10 @@ contract ClientProposal is Pausable {
             revert WrongProjectType();
     }
 
+
     function defineProjectProps(
         uint _projectId,
-        uint[] calldata _startTimes,
-        uint[] calldata _durations,
-        uint[] calldata _costs,
-        string[] calldata _descriptions,
-        address[] calldata _gc
+        ProjectProps[] calldata _projectProps
     )
         external
         onlyClients
@@ -267,18 +267,22 @@ contract ClientProposal is Pausable {
         if(projectProposals[_projectId].proposer != msg.sender)
             revert NotProposer();
 
-        uint _length = _startTimes.length;
-        if(_length != _durations.length || _length != _costs.length
-            || _length != _descriptions.length || _length != _gc.length)
-            revert LengthsNotEqual();
+        uint _length = _projectProps.length;
+        string[] memory _descriptions;
+        // if(_length != _durations.length || _length != _costs.length
+        //     || _length != _descriptions.length || _length != _gc.length)
+        //     revert LengthsNotEqual();
 
         for (uint i; i < _length;) {
 
-            projectProps[_projectId][i].stageStartTime = _startTimes[i];
-            projectProps[_projectId][i].duration = _duration[i];
-            projectProps[_projectId][i].stageTotalCost = _costs[i];
-            projectProps[_projectId][i].stageDescription = _descriptions[i];
-            projectProps[_projectId][i].stageGC = _gc[i];
+            ProjectProps memory _props = _projectProps[i];
+            projectProps[_projectId][i].stageStartTime = _props.stageStartTime;
+            projectProps[_projectId][i].duration = _props.duration;
+            projectProps[_projectId][i].stageTotalCost = _props.stageTotalCost;
+            projectProps[_projectId][i].stageDescription = _props.stageDescription;
+            projectProps[_projectId][i].stageGC = _props.stageGC;
+
+            _descriptions[i] = _props.stageDescription;
 
             unchecked {
                 ++i;
@@ -286,7 +290,7 @@ contract ClientProposal is Pausable {
         }
 
         projectProposals[_projectId].isDefined = true;
-        emit ProjectDefined(msg.sender, _projectId, description);
+        emit ProjectDefined(msg.sender, _projectId, _descriptions);
     }
 
     function pause() external onlyOwner {
@@ -297,38 +301,6 @@ contract ClientProposal is Pausable {
     function unpause() external onlyOwner {
 
         _unpause();
-    }
-
-    function grantAuditor(address _newAuditor) external onlyOwner {
-
-        if(_newAuditor == address(0))
-            revert ZeroAddress();
-
-        auditors[_newAuditor] = true;
-    }
-
-    function revokeAuditor(address _auditor) external onlyOwner {
-
-        if(!auditors[_auditor])
-            revert NotGranted();
-
-        delete auditors[_auditor];
-    }
-
-    function grantProposer(address _newAddress) external onlyOwner {
-
-        if(_newAddress == address(0))
-            revert ZeroAddress();
-
-        whiteListed[_newAddress] = true;
-    }
-
-    function revokeProposer(address _proposer) external onlyOwner {
-
-        if(!whiteListed[_proposer])
-            revert NotGranted();
-
-        delete whiteListed[_proposer];
     }
 
     function changeTokenAddress(address _newToken) external onlyOwner {
@@ -347,7 +319,7 @@ contract ClientProposal is Pausable {
         onlyOwner
     {
 
-        ProjectProposal storage _projectProposal = projectProposals[proposalId];
+        ProjectProposal storage _projectProposal = projectProposals[_proposalId];
 
         uint period = _projectProposal.deploymentTime;
 
@@ -371,5 +343,61 @@ contract ClientProposal is Pausable {
             revert AlreadyAuditRequested();
     }
 
+    function grantProposer(address _newAddress) external onlyOwner {
+
+        if(_newAddress == address(0))
+            revert ZeroAddress();
+
+        grantedClients[_newAddress] = true;
+        emit ClientGranted(_newAddress);
+    }
+
+    function revokeProposer(address _proposer) external onlyOwner {
+
+        if(!grantedClients[_proposer])
+            revert NotGranted();
+
+        delete grantedClients[_proposer];
+        emit ClientRemoved(_proposer);
+    }
+
+    function projectDeploymentTime(uint _projectId) public view returns(uint) {
+
+        return projectProposals[_projectId].deploymentTime;
+    }
+
+    function projectInvestmentPeriod(uint _projectId) public view returns(uint) {
+
+        return projectProposals[_projectId].investmentPeriod;
+    }
+
+    function projectTargetAmount(uint _projectId) public view returns(uint) {
+
+        return projectProposals[_projectId].targetAmount;
+    }
+    
+    function projectDeployedAddress(uint _projectId) public view returns(address) {
+
+        return projectProposals[_projectId].deployedAddress;
+    }
+
+    function projectStageGC(uint _projectId, uint _stage) public view returns(address) {
+
+        return projectProps[_projectId][_stage].stageGC;
+    }
+
+    function projectStageStartTime(uint _projectId, uint _stage) public view returns(uint) {
+
+        return projectProps[_projectId][_stage].stageStartTime;
+    }
+
+    function projectStageDuration(uint _projectId, uint _stage) public view returns(uint) {
+
+        return projectProps[_projectId][_stage].duration;
+    }
+
+    function projectStageCost(uint _projectId, uint _stage) public view returns(uint) {
+        return projectProps[_projectId][_stage].stageTotalCost;
+    }
 
 }

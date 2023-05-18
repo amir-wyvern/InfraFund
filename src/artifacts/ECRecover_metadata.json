@@ -1,0 +1,47 @@
+{
+	"compiler": {
+		"version": "0.6.12+commit.27d51765"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"title": "ECRecover",
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"notice": "A library that provides a safe ECDSA recovery function",
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"src/USDC.sol": "ECRecover"
+		},
+		"evmVersion": "istanbul",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": true,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"src/USDC.sol": {
+			"keccak256": "0x79a86d7787c3d2b18eb36e2dfbd242bc9878d387dac118bcb79fd0e16c3e290c",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://a3b6f593f6122b641c021cea3b9d6e0603792c913074e425465d7f78a58e5027",
+				"dweb:/ipfs/QmR9dQDKGZBKapHtXeh8mp2pPsQXpKQbrJmr9XbhJpQAdF"
+			]
+		}
+	},
+	"version": 1
+}
