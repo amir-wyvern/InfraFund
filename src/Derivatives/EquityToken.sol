@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.17;
 
-import {ERC4626} from "solmate/mixins/ERC4626.sol";
+// import {ERC4626} from "solmate/src/mixins/ERC4626.sol";
+// import "solmate/src/tokens/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC4626.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./IEquityToken.sol";
@@ -9,37 +11,30 @@ import "./IEquityToken.sol";
 error WrongOwnerAddress();
 error NotTheOwner();
 
-contract EquityToken is IEquityToken, ERC4626 {
+
+contract EquityToken is ERC4626 {
 
     using SafeERC20 for IERC20;
 
     address private owner;
-    string private _name;
-    string private _symbol;
-    IERC20 private paymentToken;
+    ERC20 public token;
 
-    event Staked(address indexed user, uint256 indexed amount);
-    event Withdrawn(address indexed user, uint256 indexed amount);
+    constructor(
+        IERC20 _token, 
+        string memory _name, 
+        string memory _symbol, 
+        address _owner
+        ) ERC20(_name, _symbol) ERC4626(_token) 
+    {
 
-    modifier onlyOwner() {
+        owner = _owner;
+    }
+
+    function mint(uint amount) external {
 
         if(msg.sender != owner)
             revert NotTheOwner();
-        _;
+        
+        _mint(msg.sender, amount);
     }
-
-    constructor(
-        string memory name,
-        string memory symbol,
-        address _owner,
-        IERC20 _token
-    ) ERC4626(_token) {
-
-        if(_owner == address(0))
-            revert WrongOwnerAddress();
-
-        owner = _owner;
-        paymentToken = _token;
-    }
-
 }

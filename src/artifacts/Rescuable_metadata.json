@@ -1,0 +1,193 @@
+{
+	"compiler": {
+		"version": "0.6.12+commit.27d51765"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "previousOwner",
+						"type": "address"
+					},
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "newOwner",
+						"type": "address"
+					}
+				],
+				"name": "OwnershipTransferred",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": true,
+						"internalType": "address",
+						"name": "newRescuer",
+						"type": "address"
+					}
+				],
+				"name": "RescuerChanged",
+				"type": "event"
+			},
+			{
+				"inputs": [],
+				"name": "owner",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "contract IERC20",
+						"name": "tokenContract",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "to",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "rescueERC20",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "rescuer",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "newOwner",
+						"type": "address"
+					}
+				],
+				"name": "transferOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "newRescuer",
+						"type": "address"
+					}
+				],
+				"name": "updateRescuer",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {
+				"owner()": {
+					"details": "Tells the address of the owner",
+					"returns": {
+						"_0": "the address of the owner"
+					}
+				},
+				"rescueERC20(address,address,uint256)": {
+					"params": {
+						"amount": "Amount to withdraw",
+						"to": "Recipient address",
+						"tokenContract": "ERC20 token contract address"
+					}
+				},
+				"rescuer()": {
+					"returns": {
+						"_0": "Rescuer's address"
+					}
+				},
+				"transferOwnership(address)": {
+					"details": "Allows the current owner to transfer control of the contract to a newOwner.",
+					"params": {
+						"newOwner": "The address to transfer ownership to."
+					}
+				},
+				"updateRescuer(address)": {
+					"params": {
+						"newRescuer": "New rescuer's address"
+					}
+				}
+			},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {
+				"rescueERC20(address,address,uint256)": {
+					"notice": "Rescue ERC20 tokens locked up in this contract."
+				},
+				"rescuer()": {
+					"notice": "Returns current rescuer"
+				},
+				"updateRescuer(address)": {
+					"notice": "Assign the rescuer role to a given address."
+				}
+			},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"src/USDC.sol": "Rescuable"
+		},
+		"evmVersion": "istanbul",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": true,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"src/USDC.sol": {
+			"keccak256": "0x79a86d7787c3d2b18eb36e2dfbd242bc9878d387dac118bcb79fd0e16c3e290c",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://a3b6f593f6122b641c021cea3b9d6e0603792c913074e425465d7f78a58e5027",
+				"dweb:/ipfs/QmR9dQDKGZBKapHtXeh8mp2pPsQXpKQbrJmr9XbhJpQAdF"
+			]
+		}
+	},
+	"version": 1
+}
