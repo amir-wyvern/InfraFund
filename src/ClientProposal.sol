@@ -33,6 +33,7 @@ error NotWhiteListed();
 error AlreadyAuditRequested();
 error OnlyOwnerCanCall();
 error NotProposer();
+error AlreadyDefined();
 error NotAuditor();
 error AlreadyVerified();
 error WrongInput();
@@ -206,7 +207,8 @@ contract ClientProposal is Pausable {
             revert ProposalFeeRepaid();
 
         projectProposals[_proposalId].isRepayed = true;
-        paymentToken.safeTransferFrom(address(this), msg.sender, proposalFee);
+        address proposer = projectProposals[_proposalId].proposer;
+        paymentToken.safeTransferFrom(address(this), proposer, proposalFee);
     }
 
 
@@ -256,7 +258,6 @@ contract ClientProposal is Pausable {
             revert WrongProjectType();
     }
 
-
     function defineProjectProps(
         uint _projectId,
         ProjectProps[] calldata _projectProps
@@ -266,6 +267,9 @@ contract ClientProposal is Pausable {
     {
         if(projectProposals[_projectId].proposer != msg.sender)
             revert NotProposer();
+
+        if(projectProposals[_projectId].isDefined)
+            revert AlreadyDefined();
 
         uint _length = _projectProps.length;
         string[] memory _descriptions;
@@ -343,7 +347,7 @@ contract ClientProposal is Pausable {
             revert AlreadyAuditRequested();
     }
 
-    function grantProposer(address _newAddress) external onlyOwner {
+    function grantClient(address _newAddress) external onlyOwner {
 
         if(_newAddress == address(0))
             revert ZeroAddress();
@@ -352,7 +356,7 @@ contract ClientProposal is Pausable {
         emit ClientGranted(_newAddress);
     }
 
-    function revokeProposer(address _proposer) external onlyOwner {
+    function revokeClient(address _proposer) external onlyOwner {
 
         if(!grantedClients[_proposer])
             revert NotGranted();
