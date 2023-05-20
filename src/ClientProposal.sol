@@ -183,6 +183,8 @@ contract ClientProposal is Pausable {
     function verifyProposal(uint proposalId) external onlyAuditor {
 
         bool verified = projectProposals[proposalId].isVerified;
+        address _proposer = projectProposals[proposalId].proposer;
+
         if(verified)
             revert AlreadyVerified();
 
@@ -196,7 +198,7 @@ contract ClientProposal is Pausable {
             revert ProposalFeeRepaid();
 
         projectProposals[proposalId].isRepayed = true;
-        paymentToken.safeTransferFrom(address(this), msg.sender, proposalFee);
+        paymentToken.safeTransferFrom(address(this), _proposer, proposalFee);
     }
 
     function repayProposalFee(uint _proposalId) external onlyOwner {
