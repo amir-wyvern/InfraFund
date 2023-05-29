@@ -13,7 +13,7 @@ error BelowMinimumStakeAmount();
 error OnlyOwnerCanCall();
 error NotContributed();
 error CooldownTimeRemaining();
-error ProjectNotDeployed();
+error WrongTier();
 error grantedBefore();
 error NotGranted();
 
@@ -28,18 +28,18 @@ contract Staking is IStaking {
     IERC20 private paymentToken; // USDC
 
     struct Tier{
-
-        uint8 tierType;
-        uint8 tierWeight;
-        uint240 tierFee;
+        uint128 tierTicket;
+        uint128 tierFee;
     }
 
-    mapping(address => mapping(uint => uint)) public contributions;
-    mapping(uint => Tier) public projectTiers;
-    mapping(address => bool) public grantedInvestors;
+    struct Contribution{
+        uint128 stakedAmount;
+        uint128 ticketAmount;
+    }
 
-    event Staked(address indexed user, uint256 indexed tierFee, uint256 indexed tierType);
-    event Withdrawn(address indexed user, uint256 indexed amount);
+    mapping(address => Contribution) public contributions;
+    mapping(uint => Tier) public tiers;
+    mapping(address => bool) public grantedInvestors;
 
     modifier onlyOwner {
 
@@ -74,47 +74,45 @@ contract Staking is IStaking {
         minimumStakeAmount = _stakingAmount;
     }
 
-    function addProjectTier(
-        uint _projectId, 
+    function addTier(
         uint8 _type, 
-        uint240 _fee,
-        uint8 _weight
+        uint128 _fee,
+        uint128 _ticketAmount
     ) 
         external 
         onlyOwner 
     {
-        
-        if (clientProposal.projectDeploymentTime(_projectId) == 0)
-            revert ProjectNotDeployed();
 
-        projectTiers[_projectId].tierType = _type;
-        projectTiers[_projectId].tierFee = _fee;
-        projectTiers[_projectId].tierWeight = _weight;
-        
+        tiers[_type].tierFee = _fee;
+        tiers[_type].tierTicket = _ticketAmount;      
     }
 
-    function selectTier(uint _projectId) external onlygrantedInvestors {
+    function selectTier(uint _tierType) external {
 
-        if (clientProposal.projectDeploymentTime(_projectId) == 0)
-            revert ProjectNotDeployed();
+        if (tiers[_tierType].tierFee == 0)
+            revert WrongTier();
 
-        uint8 _tierType = projectTiers[_projectId].tierType;
-        uint240 _tierFee = projectTiers[_projectId].tierFee;
+        uint128 amount = tiers[_tierType].tierTicket;
+        uint128 fee = tiers[_tierType].tierFee;
 
-        contributions[msg.sender][_projectId] += _tierFee;
-        paymentToken.safeTransferFrom(msg.sender, address(this), _tierFee);
-        emit Staked(msg.sender, _tierFee, _tierType);
+        contributions[msg.sender].stakedAmount += fee;
+        contributions[msg.sender].ticketAmount += amount;
+
+        paymentToken.safeTransferFrom(msg.sender, address(this), fee);
+        emit Staked(msg.sender, fee, _tierType);
     }
 
-    function cancel(uint _projectId) external onlygrantedInvestors {
+    function cancel() external {
 
-        if(contributions[msg.sender][_projectId] == 0)
+        uint staked = contributions[msg.sender].stakedAmount;
+        if(staked == 0)
             revert NotContributed();
 
-        uint amount = contributions[msg.sender][_projectId];
+        uint amount = staked;
+        delete contributions[msg.sender];
+
         paymentToken.safeTransferFrom(address(this), msg.sender, amount);
         emit Withdrawn(msg.sender, amount);
-        
     }
 
     function grantInvestor(address _user) external onlyOwner {
@@ -133,11 +131,9 @@ contract Staking is IStaking {
         delete grantedInvestors[_user];
     }
 
-    function selectWinner(address _user) external onlyOwner {
+    // function selectWinner(address _user) external onlyOwner {
 
 
-    }
-
-    
+    // }
 
 }
