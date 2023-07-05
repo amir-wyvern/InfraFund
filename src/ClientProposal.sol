@@ -65,7 +65,7 @@ contract ClientProposal is Pausable {
     uint256 private totalProposal;
     uint256 private proposalFee;
 
-    mapping(address => bool) private grantedClients;
+    mapping(address => bool) public grantedClients;
     mapping(uint => ProjectProposal) public projectProposals;
     mapping(uint => mapping(uint => ProjectProps)) public projectProps;
 
@@ -198,6 +198,7 @@ contract ClientProposal is Pausable {
             revert ProposalFeeRepaid();
 
         projectProposals[proposalId].isRepayed = true;
+        paymentToken.approve(address(this), proposalFee);
         paymentToken.safeTransferFrom(address(this), _proposer, proposalFee);
     }
 
