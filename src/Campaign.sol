@@ -41,6 +41,10 @@ error InsufficientVotes();
 error NoNeedToExtraFund();
 error WorkFinalTimeNotReached();
 
+/// @title Campaign contract
+/// @author InfraFund labs
+/// @notice The meeting place for the clients and investors
+/// @dev Inherits from OZ's Ownable contract
 contract Campaign is Ownable {
 
     using SafeERC20 for IERC20;
@@ -106,6 +110,8 @@ contract Campaign is Ownable {
         uint indexed ballot
     );
 
+
+
     modifier onlyWhiteListed {
 
         if (!staking.grantedInvestors(msg.sender))
@@ -128,6 +134,10 @@ contract Campaign is Ownable {
         _;
     }
 
+    /// @notice Owner sets the addresses of the ClientProposal and Staking contracts
+    /// @dev only owner can call
+    /// @param _client address of the ClientProposal contract
+    /// @param _staking address of the Staking contract
     function setAddresses(address _client, address _staking) external onlyOwner {
 
         if(_client == address(0) || _staking == address(0))
@@ -138,7 +148,11 @@ contract Campaign is Ownable {
         emit AddressSet(msg.sender, _client, _staking);
     }
 
-
+    /// @notice Permissioned investors invest in projects
+    /// @dev only whiteListed people are allowed
+    /// @param _projectId the unique id of a project
+    /// @param _token address of the project token
+    /// @param _amount the amount which investor wishes to invest
     function invest(
         uint _projectId, 
         address _token,

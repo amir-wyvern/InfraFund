@@ -202,19 +202,23 @@ contract ClientProposal is Pausable {
         paymentToken.safeTransferFrom(address(this), _proposer, proposalFee);
     }
 
-    function repayProposalFee(uint _proposalId) external onlyOwner {
+    // TODO: fee doesn't need to be sent back (3 times)
+    // function repayProposalFee(uint _proposalId) external onlyOwner {
 
-        bool isPayed = projectProposals[_proposalId].isRepayed;
+    //     bool isPayed = projectProposals[_proposalId].isRepayed;
 
-        if (isPayed)
-            revert ProposalFeeRepaid();
+    //     if (isPayed)
+    //         revert ProposalFeeRepaid();
 
-        projectProposals[_proposalId].isRepayed = true;
-        address proposer = projectProposals[_proposalId].proposer;
-        paymentToken.safeTransferFrom(address(this), proposer, proposalFee);
-    }
+    //     projectProposals[_proposalId].isRepayed = true;
+    //     address proposer = projectProposals[_proposalId].proposer;
+    //     paymentToken.safeTransferFrom(address(this), proposer, proposalFee);
+    // }
 
-
+    /// @notice Deploys and initializes the project token contract
+    /// @dev only owner can call this function
+    /// @param proposalId The unique id of a proposal
+    /// @return _project the address of the deployed project
     function createProject(uint proposalId) external onlyOwner returns(address _project) {
 
         ProjectProposal storage _proposal = projectProposals[proposalId];
@@ -229,7 +233,7 @@ contract ClientProposal is Pausable {
         string memory _name = _proposal.name;
         string memory _symbol = _proposal.symbol;
         uint _projectType = _proposal.projectType;
-        address _owner = msg.sender;
+        address _owner = _proposal.proposer;
         
         if(_projectType == 0) {
 
@@ -244,23 +248,35 @@ contract ClientProposal is Pausable {
 
             address token = address(new EquityToken(paymentToken, _name, _symbol, _owner));
             _proposal.deployedAddress = token;
+            _proposal.deploymentTime = block.timestamp;
             emit TokenCreated(token, _name, _symbol);
             _project = token;
-            // return _createClone(EquityToken, _owner, _name, _symbol);
         }
 
         else if(_projectType == 2) {
-            // return _createClone(LoanToken, _owner, _name, _symbol);
+            address token = address(new LoanToken(paymentToken, _name, _symbol, _owner));
+            _proposal.deployedAddress = token;
+            _proposal.deploymentTime = block.timestamp;
+            emit TokenCreated(token, _name, _symbol);
+            _project = token;
         }
 
         else if(_projectType == 3) {
-            // return _createClone(PreSaleToken, _owner, _name, _symbol);
+            address token = address(new PreSaleToken(paymentToken, _name, _symbol, _owner));
+            _proposal.deployedAddress = token;
+            _proposal.deploymentTime = block.timestamp;
+            emit TokenCreated(token, _name, _symbol);
+            _project = token;
         }
 
         else
             revert WrongProjectType();
     }
 
+    /// @notice A client defines the project properties 
+    /// @dev Only client is allowed to call
+    /// @param _projectId the unique id of a project
+    /// @param _projectProps array of struct for each stage of the project
     function defineProjectProps(
         uint _projectId,
         ProjectProps[] calldata _projectProps
@@ -300,16 +316,22 @@ contract ClientProposal is Pausable {
         emit ProjectDefined(msg.sender, _projectId, _descriptions);
     }
 
+    /// @notice Pauses the contract
+    /// @dev only owner can call
     function pause() external onlyOwner {
 
         _pause();
     }
 
+    /// @notice Unpauses the contract
+    /// @dev only owner can call
     function unpause() external onlyOwner {
 
         _unpause();
     }
 
+    /// @notice Changes the payment token
+    /// @dev only owner can call
     function changeTokenAddress(address _newToken) external onlyOwner {
 
         if(_newToken == address(0))
@@ -318,6 +340,8 @@ contract ClientProposal is Pausable {
         paymentToken = IERC20(_newToken);
     }
 
+    /// @notice Changes the investment period
+    /// @dev only owner can call
     function updateInvestmentPeriod(
         uint _proposalId,
         uint _newTime
@@ -336,6 +360,8 @@ contract ClientProposal is Pausable {
         _projectProposal.deploymentTime = _newTime;
     }
 
+    /// @notice Changes the proposal fee
+    /// @dev only owner can call
     function changeProposalFee(uint _fee) external onlyOwner {
 
         if(_fee == 0)
@@ -350,6 +376,8 @@ contract ClientProposal is Pausable {
             revert AlreadyAuditRequested();
     }
 
+    /// @notice Grants a client
+    /// @dev only owner can call
     function grantClient(address _newAddress) external onlyOwner {
 
         if(_newAddress == address(0))
@@ -359,6 +387,8 @@ contract ClientProposal is Pausable {
         emit ClientGranted(_newAddress);
     }
 
+    /// @notice Revokes the permission of a client
+    /// @dev only owner can call
     function revokeClient(address _proposer) external onlyOwner {
 
         if(!grantedClients[_proposer])
@@ -367,6 +397,10 @@ contract ClientProposal is Pausable {
         delete grantedClients[_proposer];
         emit ClientRemoved(_proposer);
     }
+
+    ////////////////////////////////////////////////////
+    ///////////////   View Functions   /////////////////
+    //////////////////////////////////////////////////// 
 
     function projectDeploymentTime(uint _projectId) public view returns(uint) {
 

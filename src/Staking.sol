@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: BSD-3-Clause license
 pragma solidity 0.8.17;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
@@ -16,6 +16,10 @@ error CooldownTimeRemaining();
 error WrongTier();
 error grantedBefore();
 error NotGranted();
+
+/// @title Staking contract
+/// @author InfraFund Labs
+/// @notice Choosing the granted investors to be elligible to invest on projects
 
 contract Staking is IStaking {
 
@@ -74,6 +78,11 @@ contract Staking is IStaking {
         minimumStakeAmount = _stakingAmount;
     }
 
+    /// @notice Adds investing tiers for investors
+    /// @dev only owner can call this function
+    /// @param _type the type of the tier
+    /// @param _fee the fee of the corresponding tier
+    /// @param _ticketAmount number of the tickets
     function addTier(
         uint8 _type, 
         uint128 _fee,
@@ -87,6 +96,9 @@ contract Staking is IStaking {
         tiers[_type].tierTicket = _ticketAmount;      
     }
 
+    /// @notice Investor selects one of the tier programs
+    /// @dev Reverts if the tier type is wrong
+    /// @param _tierType the type of the tier
     function selectTier(uint _tierType) external {
 
         if (tiers[_tierType].tierFee == 0)
@@ -102,6 +114,8 @@ contract Staking is IStaking {
         emit Staked(msg.sender, fee, _tierType);
     }
 
+    /// @notice User withdraws his/her assets
+    /// @dev Callable externally
     function cancel() external {
 
         uint staked = contributions[msg.sender].stakedAmount;
@@ -115,6 +129,8 @@ contract Staking is IStaking {
         emit Withdrawn(msg.sender, amount);
     }
 
+    /// @notice Grants an investor manually
+    /// @dev only owner can call
     function grantInvestor(address _user) external onlyOwner {
 
         if (grantedInvestors[_user])
@@ -123,6 +139,8 @@ contract Staking is IStaking {
         grantedInvestors[_user] = true;
     }
 
+    /// @notice Revokes the permission of an investor
+    /// @dev only owner can call
     function revokeInvestor(address _user) external onlyOwner {
 
         if (!grantedInvestors[_user])
